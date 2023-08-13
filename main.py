@@ -17,8 +17,6 @@ def callback(ch: pika.adapters.blocking_connection.BlockingChannel, method: pika
     if 'history' in data:
         history = data['history']
 
-    response = ''
-    i = 0
     def handle_new_token(history, response):
         data = {
             'message': response,
@@ -32,9 +30,10 @@ def callback(ch: pika.adapters.blocking_connection.BlockingChannel, method: pika
                 correlation_id=properties.correlation_id),
             body=json.dumps(data)
         )
+
     def handle_end(history):
         endMessage = {'end': True, 'sid': sid,
-                    'history': updateHistory(history, user_input, response)}
+                      'history': history}
         ch.basic_publish(
             exchange='',
             routing_key=properties.reply_to,
