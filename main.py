@@ -1,11 +1,10 @@
 import config
 import pika
-import together
 import threading
 import json
 import argparse
-import os
-from utils import mapHistoryToPrompt, updateHistory
+from utils import updateHistory
+from prompt import handle_prompt
 
 
 def callback(ch: pika.adapters.blocking_connection.BlockingChannel, method: pika.spec.Basic.Deliver, properties: pika.spec.BasicProperties, body: bytes):
@@ -18,44 +17,34 @@ def callback(ch: pika.adapters.blocking_connection.BlockingChannel, method: pika
     if 'history' in data:
         history = data['history']
 
-    prompt = mapHistoryToPrompt(history, user_input)
-    model_name = 'togethercomputer/llama-2-70b-chat'
-    tokens = together.Complete.create_streaming(
-        prompt, model_name, stop="<human>:")
-
     response = ''
-    print(prompt, end='')
     i = 0
-    for token in tokens:
-        response += token
-        if i % 2 == 0:
-            data = {
-                'message': response,
-                'sid': sid,
-                'history': updateHistory(history, user_input, response)
-            }
-            ch.basic_publish(
-                exchange='',
-                routing_key=properties.reply_to,
-                properties=pika.BasicProperties(
-                    correlation_id=properties.correlation_id),
-                body=json.dumps(data)
-            )
-        print(token, end='', flush=True)
-        i += 1
+    def handle_new_token(history, response):
+        data = {
+            'message': response,
+            'sid': sid,
+            'history': updateHistory(history, user_input, response)
+        }
+        ch.basic_publish(
+            exchange='',
+            routing_key=properties.reply_to,
+            properties=pika.BasicProperties(
+                correlation_id=properties.correlation_id),
+            body=json.dumps(data)
+        )
+    def handle_end(history):
+        endMessage = {'end': True, 'sid': sid,
+                    'history': updateHistory(history, user_input, response)}
+        ch.basic_publish(
+            exchange='',
+            routing_key=properties.reply_to,
+            properties=pika.BasicProperties(
+                correlation_id=properties.correlation_id),
+            body=json.dumps(endMessage)
+        )
+        ch.basic_ack(delivery_tag=method.delivery_tag)
 
-    print()
-    print('{:=^50}'.format(f'Tokens used {i}'))
-    endMessage = {'end': True, 'sid': sid,
-                  'history': updateHistory(history, user_input, response)}
-    ch.basic_publish(
-        exchange='',
-        routing_key=properties.reply_to,
-        properties=pika.BasicProperties(
-            correlation_id=properties.correlation_id),
-        body=json.dumps(endMessage)
-    )
-    ch.basic_ack(delivery_tag=method.delivery_tag)
+    handle_prompt(history, user_input, handle_new_token, handle_end)
 
 
 def start_consumer(thread_id):
