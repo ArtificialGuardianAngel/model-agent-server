@@ -33,7 +33,10 @@ def handle_prompt(history, user_input, new_token_callback, end_callback):
                 print(token, end='', flush=True)
                 i += 1
             is_first_run = False
-        except:
+        except Exception as e:
+            print('{:=^50}'.format(f'Exception'))
+            print(e)
+            print('{:=^50}'.format(f'End of exception'))
             sleep(0.1)
             retries += 1
     print()
