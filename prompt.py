@@ -10,7 +10,13 @@ def handle_prompt(history, user_input, new_token_callback, end_callback):
     response = ''
     is_first_run = True
     i = 0
+    retries = 0
     while config.END_OF_ANSWER not in response:
+        if retries > 10:
+            response += 'Something went wrong</bot>'
+            new_token_callback(updateHistory(
+                history, user_input, response), response)
+            break
         try:
             prompt = mapHistoryToPrompt(history, user_input, response)
 
@@ -29,6 +35,7 @@ def handle_prompt(history, user_input, new_token_callback, end_callback):
             is_first_run = False
         except:
             sleep(0.1)
+            retries += 1
     print()
     print('{:=^50}'.format(f'Tokens used {i}'))
 
