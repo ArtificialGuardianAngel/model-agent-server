@@ -16,7 +16,7 @@ def mapHistoryToPrompt(history, prompt, response=""):
         formatted_response = clearResponseFromEndTags(conv[1])
         mapped_history += f'<human>:{conv[0]}</human>\n<bot>:{formatted_response.strip()}\n'
 
-    return mapped_history + f"<human>:{prompt}</human>\n<bot>:{response.strip()}{'</bot>' in response if '' else '</bot>'}"
+    return mapped_history + f"<human>:{prompt}</human>\n<bot>:{response.strip()}" # {'</bot>' in response if '' else '</bot>'}
 
 
 def updateHistory(oldHistory, prompt, answer):
