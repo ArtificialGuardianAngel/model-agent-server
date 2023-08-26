@@ -82,4 +82,5 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    # main()
+    start_consumer(0)
