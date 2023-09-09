@@ -11,7 +11,7 @@ def clearResponseFromEndTags(response: str):
 
 
 def mapHistoryToPrompt(history, prompt, response=""):
-    mapped_history = "<human>: Hello</human>\n<bot>Hi, how can I assist today?</bot>\n"
+    mapped_history = "<human>: Hello</human>\n<bot>: Hi, how can I assist today?</bot>\n"
     for conv in history['visible']:
         formatted_response = clearResponseFromEndTags(conv[1])
         mapped_history += f'<human>:{conv[0]}</human>\n<bot>:{formatted_response.strip()}\n'

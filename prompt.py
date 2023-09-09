@@ -16,7 +16,7 @@ def handle_prompt(history, user_input, new_token_callback, end_callback):
     last_error = None
     while config.END_OF_ANSWER not in response:
         if retries > 10:
-            response += 'Something went wrong</bot>'
+            response += '\nSomething went wrong, I apologize.</bot>'
             new_token_callback(updateHistory(
                 history, user_input, response), response)
             notify({'last_error': last_error, 'errors': errors})
@@ -25,7 +25,7 @@ def handle_prompt(history, user_input, new_token_callback, end_callback):
             prompt = mapHistoryToPrompt(history, user_input, response)
 
             tokens = together.Complete.create_streaming(
-                prompt, config.MODEL_NAME, stop="</bot>", max_tokens=512)
+                prompt, config.MODEL_NAME, stop="<human>:", max_tokens=512)
 
             if (is_first_run):
                 print(prompt, end='')
