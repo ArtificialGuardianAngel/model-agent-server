@@ -19,7 +19,7 @@ def handle_prompt(history, user_input, new_token_callback, end_callback):
             response += 'Something went wrong</bot>'
             new_token_callback(updateHistory(
                 history, user_input, response), response)
-            notify(last_error, errors)
+            notify({'last_error': last_error, 'errors': errors})
             break
         try:
             prompt = mapHistoryToPrompt(history, user_input, response)

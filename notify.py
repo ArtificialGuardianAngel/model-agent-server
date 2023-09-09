@@ -1,6 +1,7 @@
 import requests
+import json
 
 
-def notify(last_error, errors):
-    requests.post('http://localhost:4444/slack',
-                  json={'last_error': last_error, 'errors': errors})
+def notify(data):
+    json_data = json.dumps(data)
+    requests.post('http://localhost:4444/slack', data=json_data)

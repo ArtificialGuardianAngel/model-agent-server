@@ -3,8 +3,10 @@ import pika
 import threading
 import json
 import argparse
+import os
 from utils import updateHistory
 from prompt import handle_prompt
+from notify import notify
 
 
 def callback(ch: pika.adapters.blocking_connection.BlockingChannel, method: pika.spec.Basic.Deliver, properties: pika.spec.BasicProperties, body: bytes):
@@ -55,7 +57,8 @@ def start_consumer(thread_id):
     channel.basic_consume(
         queue=config.QUEUE_NAME, on_message_callback=callback, auto_ack=False)
 
-    print(f"Starting consumer thread {thread_id} on {config.QUEUE_NAME}...")
+    notify(
+        {'message': f"Starting consumer [{os.getpgid()}] on {config.QUEUE_NAME}..."})
     channel.start_consuming()
 
 
