@@ -58,7 +58,7 @@ def start_consumer(thread_id):
         queue=config.QUEUE_NAME, on_message_callback=callback, auto_ack=False)
 
     notify(
-        {'message': f"Starting consumer [{os.getpgid()}] on {config.QUEUE_NAME}..."})
+        {'message': f"Starting consumer [{os.getpid()}] on {config.QUEUE_NAME}..."})
     channel.start_consuming()
 
 
