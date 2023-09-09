@@ -2,6 +2,7 @@ import config
 import together
 from utils import mapHistoryToPrompt, updateHistory
 from time import sleep
+from notify import notify
 
 __all__ = ['handle_prompt']
 
@@ -11,17 +12,20 @@ def handle_prompt(history, user_input, new_token_callback, end_callback):
     is_first_run = True
     i = 0
     retries = 0
+    errors = []
+    last_error = None
     while config.END_OF_ANSWER not in response:
         if retries > 10:
             response += 'Something went wrong</bot>'
             new_token_callback(updateHistory(
                 history, user_input, response), response)
+            notify(last_error, errors)
             break
         try:
             prompt = mapHistoryToPrompt(history, user_input, response)
 
             tokens = together.Complete.create_streaming(
-                prompt, config.MODEL_NAME, stop="<human>:")
+                prompt, config.MODEL_NAME, stop="</bot>", max_tokens=512)
 
             if (is_first_run):
                 print(prompt, end='')
@@ -37,7 +41,10 @@ def handle_prompt(history, user_input, new_token_callback, end_callback):
             print('{:=^50}'.format(f'Exception'))
             print(e)
             print('{:=^50}'.format(f'End of exception'))
-            sleep(0.1)
+            errors.append(e)
+            last_error = e
+            sleep(1)
+        finally:
             retries += 1
     print()
     print('{:=^50}'.format(f'Tokens used {i}'))
