@@ -25,7 +25,7 @@ def handle_prompt(history, user_input, new_token_callback, end_callback):
             prompt = mapHistoryToPrompt(history, user_input, response)
 
             tokens = together.Complete.create_streaming(
-                prompt, config.MODEL_NAME, stop="<human>:", max_tokens=512)
+                prompt, config.MODEL_NAME, stop='<human>:', max_tokens=512)
 
             if (is_first_run):
                 print(prompt, end='')
@@ -35,6 +35,9 @@ def handle_prompt(history, user_input, new_token_callback, end_callback):
                     new_token_callback(updateHistory(
                         history, user_input, response), response)
                 print(token, end='', flush=True)
+                has_end_tag = "</s>" in response
+                if (has_end_tag):
+                    response = response[: response.index('</s>')] + "</bot>"
                 i += 1
             is_first_run = False
         except Exception as e:
