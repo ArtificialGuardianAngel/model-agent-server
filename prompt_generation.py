@@ -1,13 +1,16 @@
 import utils
 from prompt import handle_prompt
 
+
 def handle_new_token(new_history, response):
     # print(response)
     pass
 
+
 def handle_end(history):
-    print("{:=^50}END")
+    print("{:=^50}".format("END"))
     print(history)
+
 
 if __name__ == "__main__":
     old_history = {
